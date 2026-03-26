@@ -9,15 +9,20 @@ package ccp;
  * @author User
  */
 public class RefuelTruck {
-    public synchronized void incrementFuel(){
-        for(int i = 0 ; i<5; i++){
-            System.out.println("Refueling ");
+    
+    private boolean isOccupied = false;
+    
+    public synchronized void fuel() throws InterruptedException{
+        while(isOccupied){
+            wait();
         }
+        isOccupied = true;
+        System.out.println("Refueling.");
     }
     
-    public synchronized void decrementRefuelComplete(){
-        for(int i = 0; i<5; i++){
-            System.out.println("Refuel complete ");
-        }
+    public synchronized void refuelComplete(){
+        isOccupied = false;
+        System.out.println("Finished refueling.");
+        notify();
     }
 }

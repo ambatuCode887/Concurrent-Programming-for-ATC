@@ -16,8 +16,8 @@ public class Runway {
         while(isOccupied){
             wait();
         }
-        isOccupied = true;
         System.out.println("Landing");
+        isOccupied = true;
         System.out.println("Landed");
     }
     
