@@ -16,15 +16,11 @@ public class Runway {
         while(isOccupied){
             wait();
         }
-        System.out.println("Landing");
         isOccupied = true;
-        System.out.println("Landed");
     }
     
     public synchronized void takeoff(){
         isOccupied = false;
-        System.out.println("Requesting Taking off.");
-        System.out.println("Taking off");
         notify();
     }
 }

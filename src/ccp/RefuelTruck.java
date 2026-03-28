@@ -17,12 +17,10 @@ public class RefuelTruck {
             wait();
         }
         isOccupied = true;
-        System.out.println("Refueling.");
     }
     
     public synchronized void refuelComplete(){
         isOccupied = false;
-        System.out.println("Finished refueling.");
         notify();
     }
 }

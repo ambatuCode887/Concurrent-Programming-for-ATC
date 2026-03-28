@@ -17,12 +17,14 @@ public class Gate {
             wait();
         }
         isOccupied = true;
-        System.out.println("Dock at Gate-1");
     }
     
     public synchronized void undock(){
         isOccupied = false;
-        System.out.println("Undocked from gate 1");
         notify();
+    }
+    
+    public synchronized boolean isOccupied() {
+    return isOccupied;
     }
 }

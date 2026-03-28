@@ -9,5 +9,47 @@ package ccp;
  * @author User
  */
 public class Airport {
+    private Gate[] gates = new Gate[3];
+    Runway runway;
+    RefuelTruck refuelTruck;
+    private int planesOnGround = 0;
+    
+    public Airport(Runway runway, RefuelTruck refuelTruck){
+        gates[0] = new Gate();
+        gates[1] = new Gate();
+        gates[2] = new Gate();
+        this.refuelTruck = refuelTruck;
+        this.runway = runway;
+    }
+    
+    public Runway getRunway(){
+        return runway;
+    }
+    
+    public RefuelTruck getRefuelTruck() {
+    return refuelTruck;
+    }
+    
+    public synchronized void enterAirport() throws InterruptedException{
+        while(planesOnGround >= 3){
+            wait();
+        }
+        planesOnGround++;
+    }
+    
+    public synchronized void exitAirport(){
+         planesOnGround--;
+         notify();
+    }
+    
+    public synchronized Gate getAvailableGate(){
+        for (Gate gate : gates) {
+            if (!gate.isOccupied()) {
+                return gate;
+            }
+        }
+        return null;
+    }
+    
     
 }
