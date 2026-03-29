@@ -99,12 +99,30 @@ public class Airplane implements Runnable {
         disembark.start();
         refuel.start();
         supplies.start();
-        embarking.start();
+        
         
         try { disembark.join(); } catch (InterruptedException ex) {}
         try { refuel.join(); } catch (InterruptedException ex) {}
         try { supplies.join(); } catch (InterruptedException ex) {}
+        
+        embarking.start();
         try { embarking.join(); } catch (InterruptedException ex) {}
+        
+        System.out.println("Plane-" + planeNumber + ": undocking");
+        gate.undock();
+        
+        try {
+            System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
+        atc.requestTakeoff(planeNumber);
+      
+        runway.takeoff();
+        System.out.println("Plane-" + planeNumber + ": Taking off");
     }
     
 }
