@@ -81,7 +81,30 @@ public class Airplane implements Runnable {
            } catch(InterruptedException ex) {}
         });
         
+        Thread supplies = new Thread(() -> {
+           System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning.");
+           try{
+               Thread.sleep(2000);
+               System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning are complete.");
+           }catch(InterruptedException ex){}
+        });
         
+        Thread embarking = new Thread(() -> {
+            System.out.println("Plane-" + planeNumber + "'s Passenger: " + passengerOnBoard + " embarking into the Plane-" + planeNumber);
+            try{
+                Thread.sleep(2000);
+            } catch(InterruptedException ex) {}
+        });
+        
+        disembark.start();
+        refuel.start();
+        supplies.start();
+        embarking.start();
+        
+        try { disembark.join(); } catch (InterruptedException ex) {}
+        try { refuel.join(); } catch (InterruptedException ex) {}
+        try { supplies.join(); } catch (InterruptedException ex) {}
+        try { embarking.join(); } catch (InterruptedException ex) {}
     }
     
 }
