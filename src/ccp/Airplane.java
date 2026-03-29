@@ -51,10 +51,11 @@ public class Airplane implements Runnable {
         } catch (InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
-         
-        System.out.println("Plane-" + planeNumber + ": CoastingtoGate-" + gate.getGateNumber() + ".");
+
+        System.out.println("Plane-" + planeNumber + ": Coasting to Gate-" + gate.getGateNumber() + ".");
         try {
             Thread.sleep(1000);
+            runway.takeoff();
         } catch (InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -107,16 +108,16 @@ public class Airplane implements Runnable {
         System.out.println("Plane-" + planeNumber + ": Undocking.");
         gate.undock();
         
+        System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
         try {
-            System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
             Thread.sleep(1000);
+            runway.land(); // ← acquire runway for takeoff
         } catch (InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
         atc.requestTakeoff(planeNumber);
-      
         runway.takeoff();
         System.out.println("Plane-" + planeNumber + ": Taking off.");
     }
