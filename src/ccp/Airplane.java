@@ -63,12 +63,7 @@ public class Airplane implements Runnable {
         }
         System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
         
-        Thread disembark = new Thread(() -> {
-            System.out.println("Plane-" + planeNumber + "'s Passenger: " + passengerOnBoard + " disembarking out of Plane-" + planeNumber);
-            try{
-                Thread.sleep(2000);
-            } catch(InterruptedException ex) {}
-        });
+        Thread disembark = new Thread(new Passenger(planeNumber, passengerOnBoard, false));
         
         Thread refuel = new Thread(() -> {
            RefuelTruck rTruck = airport.getRefuelTruck();
@@ -89,24 +84,27 @@ public class Airplane implements Runnable {
            }catch(InterruptedException ex){}
         });
         
-        Thread embarking = new Thread(() -> {
-            System.out.println("Plane-" + planeNumber + "'s Passenger: " + passengerOnBoard + " embarking into the Plane-" + planeNumber);
-            try{
-                Thread.sleep(2000);
-            } catch(InterruptedException ex) {}
-        });
+        Thread embarking = new Thread(new Passenger(planeNumber, passengerOnBoard, true));
         
         disembark.start();
         refuel.start();
         supplies.start();
         
         
-        try { disembark.join(); } catch (InterruptedException ex) {}
-        try { refuel.join(); } catch (InterruptedException ex) {}
-        try { supplies.join(); } catch (InterruptedException ex) {}
+        try { disembark.join(); } catch (InterruptedException ex) {
+        
+        }
+        try { refuel.join(); } catch (InterruptedException ex) {
+        
+        }
+        try { supplies.join(); } catch (InterruptedException ex) {
+        
+        }
         
         embarking.start();
-        try { embarking.join(); } catch (InterruptedException ex) {}
+        try { embarking.join(); } catch (InterruptedException ex) {
+        
+        }
         
         System.out.println("Plane-" + planeNumber + ": undocking");
         gate.undock();
@@ -124,5 +122,4 @@ public class Airplane implements Runnable {
         runway.takeoff();
         System.out.println("Plane-" + planeNumber + ": Taking off");
     }
-    
 }
