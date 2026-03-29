@@ -4,10 +4,65 @@
  */
 package ccp;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
 /**
  *
  * @author User
  */
-public class Airplane {
+public class Airplane implements Runnable {
+    private int planeNumber;
+    private int passengerOnBoard;
+    private boolean isEmergency;
+    private ATC atc;
+    private Airport airport;
+    
+    public Airplane(int planeNumber, boolean isEmergency, ATC atc, Airport airport) {
+        this.planeNumber = planeNumber;
+        this.isEmergency = isEmergency;
+        this.passengerOnBoard = (int)(Math.random() * 50) + 1;
+        this.atc = atc;
+        this.airport = airport;
+    }
+    
+    @Override
+    public void run(){
+        System.out.println("Plane-" + planeNumber + ": Requesting Landing.");
+        
+        Gate gate = atc.requestLanding(planeNumber);
+        if(gate == null){
+            return;
+        }
+        
+        System.out.println("Plane-" + planeNumber + ": Landing.");
+        Runway runway = airport.getRunway();
+        try {
+            runway.land();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Plane-" + planeNumber + ": Landed.");
+         
+        System.out.println("Plane-" + planeNumber + ": CoastingtoGate-" + gate.getGateNumber() + ".");
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
+        try {
+            gate.dock();
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
+        
+    }
     
 }

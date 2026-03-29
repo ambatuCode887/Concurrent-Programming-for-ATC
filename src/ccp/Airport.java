@@ -15,9 +15,9 @@ public class Airport {
     private int planesOnGround = 0;
     
     public Airport(Runway runway, RefuelTruck refuelTruck){
-        gates[0] = new Gate();
-        gates[1] = new Gate();
-        gates[2] = new Gate();
+        gates[0] = new Gate(1);
+        gates[1] = new Gate(2);
+        gates[2] = new Gate(3);
         this.refuelTruck = refuelTruck;
         this.runway = runway;
     }

@@ -9,7 +9,7 @@ package ccp;
  * @author User
  */
 public class ATC {
-    private Airport airport;
+    private final Airport airport;
     
     public ATC(Airport airport){
         this.airport = airport;
@@ -31,6 +31,7 @@ public class ATC {
         System.out.println("ATC: Taking-off is granted for Plane-" + planeNumber + ". Runway is free.");
         airport.exitAirport();        
     }
+    
     
     
 }

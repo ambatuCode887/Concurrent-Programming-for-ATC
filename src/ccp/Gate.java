@@ -10,7 +10,15 @@ package ccp;
  */
 public class Gate {
     private boolean isOccupied = false;
+    private int gateNumber;
     
+    public Gate(int gateNumber){
+        this.gateNumber = gateNumber;
+    }
+    
+    public int getGateNumber(){
+        return gateNumber;
+    }
     
     public synchronized void dock() throws InterruptedException{
         while(isOccupied){
