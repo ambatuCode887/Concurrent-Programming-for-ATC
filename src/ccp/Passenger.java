@@ -23,9 +23,9 @@ public class Passenger implements Runnable {
     public void run (){
         
         if(isEmbarking == true){
-            System.out.println("Plane-" + planeNumber + "'s Passenger" + passengerCount + " embarking into Plane-" + planeNumber + ".");
+            System.out.println("Plane-" + planeNumber + "'s Passenger " + passengerCount + " embarking into Plane-" + planeNumber + ".");
         } else {
-            System.out.println("Plane-" + planeNumber + "'s Passenger" + passengerCount + " disembarking from Plane-" + planeNumber + ".");
+            System.out.println("Plane-" + planeNumber + "'s Passenger " + passengerCount + " disembarking from Plane-" + planeNumber + ".");
         }
         
         try{

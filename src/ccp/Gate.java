@@ -33,6 +33,10 @@ public class Gate {
     }
     
     public synchronized boolean isOccupied() {
-    return isOccupied;
+        return isOccupied;
+    }
+    
+    public synchronized void reserve(){
+        isOccupied = true;
     }
 }

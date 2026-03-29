@@ -4,6 +4,9 @@
  */
 package ccp;
 
+
+import java.util.ArrayList;
+import java.util.List;
 /**
  *
  * @author User
@@ -51,5 +54,38 @@ public class Airport {
         return null;
     }
     
+    public Gate[] getGates() {
+        return gates;
+    }
     
+    public synchronized boolean isFull() {
+        return planesOnGround >= 3;
+    }
+    
+    private List<Long> waitingTimes = new ArrayList<>();
+    
+    public synchronized void addWaitingTime(long waitingTime) {
+        waitingTimes.add(waitingTime);
+    }
+
+    public synchronized void printStatistics() {
+        if(waitingTimes.isEmpty()) {
+            System.out.println("No waiting time data available.");
+            return;
+        }
+
+        long max = 0, min = Long.MAX_VALUE, total = 0;
+
+        for (long time : waitingTimes) {
+            if (time > max) max = time;
+            if (time < min) min = time;
+            total += time;
+        }
+
+        long average = total / waitingTimes.size();
+
+        System.out.println("Max waiting time: " + max + "ms");
+        System.out.println("Min waiting time: " + min + "ms");
+        System.out.println("Average waiting time: " + average + "ms");
+    }
 }

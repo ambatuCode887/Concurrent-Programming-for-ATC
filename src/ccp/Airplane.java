@@ -28,26 +28,29 @@ public class Airplane implements Runnable {
     
     @Override
     public void run(){
-        System.out.println("Plane-" + planeNumber + ": Requesting Landing.");
+        long arrivalTime = System.currentTimeMillis();
         
-        Gate gate = atc.requestLanding(planeNumber);
-        if(gate == null){
+        System.out.println("Plane-" + planeNumber + ": Requesting Landing.");
+        Gate gate;
+        try {
+            gate = atc.requestLanding(planeNumber);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
         
-        System.out.println("Plane-" + planeNumber + ": Landing.");
+        long waitingTime = System.currentTimeMillis() - arrivalTime;
+        airport.addWaitingTime(waitingTime);
+        
         Runway runway = airport.getRunway();
         try {
             runway.land();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        try {
+            System.out.println("Plane-" + planeNumber + ": Landing.");
             Thread.sleep(1000);
+            System.out.println("Plane-" + planeNumber + ": Landed.");
         } catch (InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
-        System.out.println("Plane-" + planeNumber + ": Landed.");
          
         System.out.println("Plane-" + planeNumber + ": CoastingtoGate-" + gate.getGateNumber() + ".");
         try {
@@ -55,12 +58,7 @@ public class Airplane implements Runnable {
         } catch (InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
-        try {
-            gate.dock();
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
-        }
+       
         System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
         
         Thread disembark = new Thread(new Passenger(planeNumber, passengerOnBoard, false));
@@ -106,7 +104,7 @@ public class Airplane implements Runnable {
         
         }
         
-        System.out.println("Plane-" + planeNumber + ": undocking");
+        System.out.println("Plane-" + planeNumber + ": Undocking.");
         gate.undock();
         
         try {
@@ -120,6 +118,6 @@ public class Airplane implements Runnable {
         atc.requestTakeoff(planeNumber);
       
         runway.takeoff();
-        System.out.println("Plane-" + planeNumber + ": Taking off");
+        System.out.println("Plane-" + planeNumber + ": Taking off.");
     }
 }
