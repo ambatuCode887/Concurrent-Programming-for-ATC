@@ -63,6 +63,25 @@ public class Airplane implements Runnable {
         }
         System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
         
+        Thread disembark = new Thread(() -> {
+            System.out.println("Plane-" + planeNumber + "'s Passenger: " + passengerOnBoard + " disembarking out of Plane-" + planeNumber);
+            try{
+                Thread.sleep(2000);
+            } catch(InterruptedException ex) {}
+        });
+        
+        Thread refuel = new Thread(() -> {
+           RefuelTruck rTruck = airport.getRefuelTruck();
+           try{
+               System.out.println("Plane-" + planeNumber + ": Refueling started.");
+               rTruck.fuel();
+               Thread.sleep(3000);
+               rTruck.refuelComplete();
+               System.out.println("Plane-" + planeNumber + ": Refueling complete.");
+           } catch(InterruptedException ex) {}
+        });
+        
+        
     }
     
 }
