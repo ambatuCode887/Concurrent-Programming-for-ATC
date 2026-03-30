@@ -48,9 +48,8 @@ public class Airplane implements Runnable {
         airport.addWaitingTime(waitingTime);
         
         Runway runway = airport.getRunway();
+        System.out.println("Plane-" + planeNumber + ": Landing.");
         try {
-            runway.land();
-            System.out.println("Plane-" + planeNumber + ": Landing.");
             Thread.sleep(1000);
             System.out.println("Plane-" + planeNumber + ": Landed.");
         } catch (InterruptedException ex) {

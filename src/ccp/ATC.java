@@ -17,7 +17,7 @@ public class ATC {
     
     public Gate requestLanding(int planeNumber, boolean isEmergency) throws InterruptedException{
        if(isEmergency) {
-        System.out.println("ATC: EMERGENCY landing granted for Plane-" + planeNumber + "! Fuel shortage!");
+        System.out.println("ATC: EMERGENCY landing granted for Plane-" + planeNumber + "! Fuel shortage!" + "Waiting on Gate to be free");
         airport.enterAirportEmergency();
     } else {
         if(airport.isFull()) {
@@ -25,6 +25,8 @@ public class ATC {
         }
         airport.enterAirport();
     }
+       
+       airport.getRunway().land();
 
        Gate gate = airport.getAvailableGate();
        gate.reserve();

@@ -7,6 +7,8 @@ package ccp;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedList;
+import java.util.Queue;
 /**
  *
  * @author User
@@ -17,6 +19,7 @@ public class Airport {
     RefuelTruck refuelTruck;
     private int planesOnGround = 0;
     private boolean emergencyWaiting = false;
+    private Queue<Thread> waitingQueue = new LinkedList<>();
     
     public Airport(Runway runway, RefuelTruck refuelTruck){
         gates[0] = new Gate(1);
@@ -36,7 +39,11 @@ public class Airport {
     
     public synchronized void enterAirport() throws InterruptedException{
         while(planesOnGround >= 3 || emergencyWaiting){
-            wait();
+            waitingQueue.add(Thread.currentThread());
+            while(planesOnGround >= 3 || emergencyWaiting || waitingQueue.peek() != Thread.currentThread()){
+                wait();
+            }
+            waitingQueue.poll();
         }
         planesOnGround++;
     }
