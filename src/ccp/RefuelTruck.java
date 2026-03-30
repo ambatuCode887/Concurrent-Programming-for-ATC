@@ -4,6 +4,8 @@
  */
 package ccp;
 
+import java.util.LinkedList;
+import java.util.Queue;
 /**
  *
  * @author User
@@ -11,16 +13,23 @@ package ccp;
 public class RefuelTruck {
     
     private boolean isOccupied = false;
+    private Queue<Integer> waitingPlanes = new LinkedList<>();
     
-    public synchronized void fuel() throws InterruptedException{
-        while(isOccupied){
+    public synchronized void requestFuel(int planeNumber) throws InterruptedException {
+        if(isOccupied) {
+            System.out.println("Refuel Truck: Busy! Plane-" + planeNumber + " added to queue.");
+            waitingPlanes.add(planeNumber);
+        }
+        while(isOccupied) {
             wait();
         }
         isOccupied = true;
+        System.out.println("Refuel Truck: Now refueling Plane-" + planeNumber + ".");
     }
-    
-    public synchronized void refuelComplete(){
+
+    public synchronized void refuelComplete(int planeNumber) {
         isOccupied = false;
+        System.out.println("Refuel Truck: Finished refueling Plane-" + planeNumber + ".");
         notify();
     }
 }

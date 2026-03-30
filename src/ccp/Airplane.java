@@ -18,6 +18,7 @@ public class Airplane implements Runnable {
     private ATC atc;
     private Airport airport;
     
+    
     public Airplane(int planeNumber, boolean isEmergency, ATC atc, Airport airport) {
         this.planeNumber = planeNumber;
         this.isEmergency = isEmergency;
@@ -30,10 +31,14 @@ public class Airplane implements Runnable {
     public void run(){
         long arrivalTime = System.currentTimeMillis();
         
+        if(isEmergency) {
+            System.out.println("Plane-" + planeNumber + ": EMERGENCY! Fuel shortage, requesting emergency landing!");
+        }
+        
         System.out.println("Plane-" + planeNumber + ": Requesting Landing.");
         Gate gate;
         try {
-            gate = atc.requestLanding(planeNumber);
+            gate = atc.requestLanding(planeNumber, isEmergency);
         } catch (InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
             return;
@@ -67,11 +72,9 @@ public class Airplane implements Runnable {
         Thread refuel = new Thread(() -> {
            RefuelTruck rTruck = airport.getRefuelTruck();
            try{
-               System.out.println("Plane-" + planeNumber + ": Refueling started.");
-               rTruck.fuel();
+               rTruck.requestFuel(planeNumber);
                Thread.sleep(3000);
-               rTruck.refuelComplete();
-               System.out.println("Plane-" + planeNumber + ": Refueling complete.");
+               rTruck.refuelComplete(planeNumber);
            } catch(InterruptedException ex) {}
         });
         

@@ -16,6 +16,7 @@ public class Airport {
     Runway runway;
     RefuelTruck refuelTruck;
     private int planesOnGround = 0;
+    private boolean emergencyWaiting = false;
     
     public Airport(Runway runway, RefuelTruck refuelTruck){
         gates[0] = new Gate(1);
@@ -34,7 +35,7 @@ public class Airport {
     }
     
     public synchronized void enterAirport() throws InterruptedException{
-        while(planesOnGround >= 3){
+        while(planesOnGround >= 3 || emergencyWaiting){
             wait();
         }
         planesOnGround++;
@@ -42,7 +43,7 @@ public class Airport {
     
     public synchronized void exitAirport(){
          planesOnGround--;
-         notify();
+         notifyAll();
     }
     
     public synchronized Gate getAvailableGate(){
@@ -67,6 +68,17 @@ public class Airport {
     public synchronized void addWaitingTime(long waitingTime) {
         waitingTimes.add(waitingTime);
     }
+    
+    public synchronized void enterAirportEmergency() throws InterruptedException {
+        emergencyWaiting = true;
+        notifyAll();
+        while(getAvailableGate() == null) {
+            wait();
+        }
+        emergencyWaiting = false;
+        planesOnGround++;
+        notifyAll();
+    }
 
     public synchronized void printStatistics() {
         if(waitingTimes.isEmpty()) {
@@ -88,4 +100,5 @@ public class Airport {
         System.out.println("Min waiting time: " + min + "ms");
         System.out.println("Average waiting time: " + average + "ms");
     }
+    
 }

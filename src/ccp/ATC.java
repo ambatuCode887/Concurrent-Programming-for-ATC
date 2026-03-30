@@ -15,12 +15,17 @@ public class ATC {
         this.airport = airport;
     }
     
-    public Gate requestLanding(int planeNumber) throws InterruptedException{
-       if(airport.isFull()){
-           System.out.println("ATC: Landing Permission Denied for Plane-" + planeNumber + ", Airport Full.");
-       }
-       
-       airport.enterAirport();
+    public Gate requestLanding(int planeNumber, boolean isEmergency) throws InterruptedException{
+       if(isEmergency) {
+        System.out.println("ATC: EMERGENCY landing granted for Plane-" + planeNumber + "! Fuel shortage!");
+        airport.enterAirportEmergency();
+    } else {
+        if(airport.isFull()) {
+            System.out.println("ATC: Landing Permission Denied for Plane-" + planeNumber + ", Airport Full.");
+        }
+        airport.enterAirport();
+    }
+
        Gate gate = airport.getAvailableGate();
        gate.reserve();
        System.out.println("ATC: Landing permission granted for Plane-" + planeNumber + ".");
