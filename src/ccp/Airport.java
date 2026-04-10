@@ -19,6 +19,7 @@ public class Airport {
     RefuelTruck refuelTruck;
     Kitchen kitchen;
     private int planesOnGround = 0;
+    private int nextToEmbark = 1;
     private boolean emergencyWaiting = false;
     private boolean planeDocked = true;
     private Queue<Thread> waitingQueue = new LinkedList<>();
@@ -115,6 +116,17 @@ public class Airport {
     
      public synchronized void notifyDocked() {
         planeDocked = true;
+        notifyAll();
+    }
+     
+     public synchronized void waitForEmbarkTurn(int planeNumber) throws InterruptedException {
+        while(nextToEmbark != planeNumber) {
+            wait();
+        }
+    }
+
+    public synchronized void embarkComplete() {
+        nextToEmbark++;
         notifyAll();
     }
 

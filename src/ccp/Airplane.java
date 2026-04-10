@@ -81,7 +81,7 @@ public class Airplane implements Runnable {
         Thread supplies = new Thread(() -> {
             try {
                 System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning.");
-                Thread.sleep(2000); //cleaning
+                Thread.sleep(2000);
                 System.out.println("Plane-" + planeNumber + ": Cleaning complete.");
                 airport.getKitchen().requestFood(planeNumber);
             } catch(InterruptedException ex) {}
@@ -106,22 +106,28 @@ public class Airplane implements Runnable {
         
         }
         
+        try {
+            airport.waitForEmbarkTurn(planeNumber);
+        } catch (InterruptedException ex) {
+        
+        }
         embarking.start();
         try { embarking.join(); } catch (InterruptedException ex) {
         
         }
+        airport.embarkComplete();
         
         gate.undock();
 
         try {
-            runway.land(); //wait for runway 
+            runway.land();
             System.out.println("Plane-" + planeNumber + ": Undocking.");
             System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
             Thread.sleep(1000);
             System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
             atc.requestTakeoff(planeNumber);
-            runway.takeoff();
             System.out.println("Plane-" + planeNumber + ": Taking off.");
+            runway.takeoff();
         } catch(InterruptedException ex) {}
     }
 }

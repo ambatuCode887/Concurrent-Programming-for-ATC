@@ -49,7 +49,7 @@ public class RefuelTruck implements Runnable {
 
             synchronized(this) {
                 isOccupied = false;
-                System.out.println("Refuel Truck: Finished refueling.");
+                System.out.println("Refuel Truck: Finished refueling Plane-" + planeNumber + ".");
                 notifyAll(); //wake up waiting planes
             }
         }

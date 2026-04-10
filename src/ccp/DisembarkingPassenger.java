@@ -19,8 +19,8 @@ public class DisembarkingPassenger implements Runnable {
     
     @Override
     public void run (){
-        System.out.println("Plane-" + planeNumber 
-                + passengerCount + " Passenger disembarking from Plane-" + planeNumber + ".");
+        System.out.println("Plane-" + planeNumber + "'s Passenger: " + passengerCount + " disembarking from Plane-" +
+                planeNumber + ".");
         try{
             Thread.sleep(2000);
         } catch (InterruptedException ex){
