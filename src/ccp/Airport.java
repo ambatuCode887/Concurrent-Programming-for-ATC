@@ -17,16 +17,24 @@ public class Airport {
     private Gate[] gates = new Gate[3];
     Runway runway;
     RefuelTruck refuelTruck;
+    Kitchen kitchen;
     private int planesOnGround = 0;
     private boolean emergencyWaiting = false;
+    private boolean planeDocked = true;
     private Queue<Thread> waitingQueue = new LinkedList<>();
     
-    public Airport(Runway runway, RefuelTruck refuelTruck){
-        gates[0] = new Gate(1);
-        gates[1] = new Gate(2);
-        gates[2] = new Gate(3);
+    public Airport(Runway runway, RefuelTruck refuelTruck, Kitchen kitchen){
+        gates[0] = new Gate(1, this);
+        gates[1] = new Gate(2, this);
+        gates[2] = new Gate(3, this);
         this.refuelTruck = refuelTruck;
         this.runway = runway;
+        this.kitchen = kitchen;
+    }
+
+    
+    public Kitchen getKitchen(){
+        return kitchen;
     }
     
     public Runway getRunway(){
@@ -34,18 +42,22 @@ public class Airport {
     }
     
     public RefuelTruck getRefuelTruck() {
-    return refuelTruck;
+        return refuelTruck;
     }
     
-    public synchronized void enterAirport() throws InterruptedException{
-        while(planesOnGround >= 3 || emergencyWaiting){
+    public synchronized Gate enterAirport() throws InterruptedException {
+        while(planesOnGround >= 3 || emergencyWaiting) {
             waitingQueue.add(Thread.currentThread());
-            while(planesOnGround >= 3 || emergencyWaiting || waitingQueue.peek() != Thread.currentThread()){
+            while(planesOnGround >= 3 || emergencyWaiting || 
+                  waitingQueue.peek() != Thread.currentThread()) {
                 wait();
             }
             waitingQueue.poll();
         }
         planesOnGround++;
+        Gate gate = getAvailableGate();
+        gate.reserve(); // ← reserve immediately!
+        return gate;
     }
     
     public synchronized void exitAirport(){
@@ -76,14 +88,33 @@ public class Airport {
         waitingTimes.add(waitingTime);
     }
     
-    public synchronized void enterAirportEmergency() throws InterruptedException {
+    public synchronized Gate enterAirportEmergency() throws InterruptedException {
         emergencyWaiting = true;
         notifyAll();
-        while(getAvailableGate() == null) {
-            wait();
+
+        Gate gate = null;
+        while(gate == null) {
+            gate = getAvailableGate();
+            if(gate == null) {
+                wait();
+            }
         }
+        gate.reserve();
         emergencyWaiting = false;
         planesOnGround++;
+        notifyAll();
+        return gate;
+    }
+    
+    public synchronized void waitForDock() throws InterruptedException {
+        while(!planeDocked) {
+            wait();
+        }
+            planeDocked = false;
+    }
+    
+     public synchronized void notifyDocked() {
+        planeDocked = true;
         notifyAll();
     }
 

@@ -14,11 +14,17 @@ public class main {
     public static void main(String[] args){
         Runway runway = new Runway();
         RefuelTruck rTruck = new RefuelTruck();
-        Airport airport = new Airport(runway, rTruck);
+        Kitchen kitchen = new Kitchen();
+        Airport airport = new Airport(runway, rTruck, kitchen);
         ATC atc = new ATC(airport);
         
         Random rand = new Random();
         Thread[] planes = new Thread[6];
+        
+        Thread truckThread = new Thread(rTruck);
+        Thread kitchenThread = new Thread(kitchen);
+        truckThread.start();
+        kitchenThread.start();
         
         for(int i =0 ; i <6; i++){
             boolean isEmergency = (i == 4); //set plane 5 as emergency

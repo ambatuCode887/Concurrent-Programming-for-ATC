@@ -10,26 +10,48 @@ import java.util.Queue;
  *
  * @author User
  */
-public class RefuelTruck {
-    
+public class RefuelTruck implements Runnable {
     private boolean isOccupied = false;
     private Queue<Integer> waitingPlanes = new LinkedList<>();
     
     public synchronized void requestFuel(int planeNumber) throws InterruptedException {
-        if(isOccupied) {
-            System.out.println("Refuel Truck: Busy! Plane-" + planeNumber + " added to queue.");
-            waitingPlanes.add(planeNumber);
-        }
-        while(isOccupied) {
+        waitingPlanes.add(planeNumber);
+        System.out.println("Refuel Truck: Plane-" + planeNumber + " added to queue.");
+        
+        notifyAll(); //tell the truck a plane is waiting
+        
+        while(waitingPlanes.contains(planeNumber)){
             wait();
         }
-        isOccupied = true;
-        System.out.println("Refuel Truck: Now refueling Plane-" + planeNumber + ".");
     }
+    
+        @Override
+        public void run() {
+        while(true) {
+            int planeNumber = -1;
+            synchronized(this) {
+                while(waitingPlanes.isEmpty()) {
+                    try {
+                        wait(); //sleep until a plane requests fuel
+                    } catch(InterruptedException ex) {
+                        return; //truck shuts down
+                    }
+                }
+                planeNumber = waitingPlanes.poll(); //get next plane
+                isOccupied = true;
+                System.out.println("Refuel Truck: Now refueling Plane-" + planeNumber + ".");
+            }
+            try {
+                Thread.sleep(3000);
+            } catch(InterruptedException ex) {
+            
+            }
 
-    public synchronized void refuelComplete(int planeNumber) {
-        isOccupied = false;
-        System.out.println("Refuel Truck: Finished refueling Plane-" + planeNumber + ".");
-        notify();
+            synchronized(this) {
+                isOccupied = false;
+                System.out.println("Refuel Truck: Finished refueling.");
+                notifyAll(); //wake up waiting planes
+            }
+        }
     }
 }

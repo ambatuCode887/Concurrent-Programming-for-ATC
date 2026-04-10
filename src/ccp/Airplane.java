@@ -65,25 +65,27 @@ public class Airplane implements Runnable {
         }
        
         System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
-        
+        airport.notifyDocked();//notify atc plane has docked
         Thread disembark = new Thread(new Passenger(planeNumber, passengerOnBoard, false));
         
         Thread refuel = new Thread(() -> {
-           RefuelTruck rTruck = airport.getRefuelTruck();
-           try{
-               rTruck.requestFuel(planeNumber);
-               Thread.sleep(3000);
-               rTruck.refuelComplete(planeNumber);
-           } catch(InterruptedException ex) {}
+           try {
+               airport.getRefuelTruck().requestFuel(planeNumber);
+           } catch(InterruptedException ex) {
+               
+           }
         });
         
         Thread supplies = new Thread(() -> {
-           System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning.");
-           try{
-               Thread.sleep(2000);
-               System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning are complete.");
-           }catch(InterruptedException ex){}
+            try {
+                System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning.");
+                Thread.sleep(2000); // cleaning
+                System.out.println("Plane-" + planeNumber + ": Cleaning complete.");
+                airport.getKitchen().requestFood(planeNumber);
+            } catch(InterruptedException ex) {}
         });
+        
+        
         
         Thread embarking = new Thread(new Passenger(planeNumber, passengerOnBoard, true));
         
@@ -107,20 +109,17 @@ public class Airplane implements Runnable {
         
         }
         
-        System.out.println("Plane-" + planeNumber + ": Undocking.");
         gate.undock();
-        
-        System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
-        try {
-            Thread.sleep(1000);
-            runway.land(); // ← acquire runway for takeoff
-        } catch (InterruptedException ex) {
-            Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
-        }
 
-        System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
-        atc.requestTakeoff(planeNumber);
-        runway.takeoff();
-        System.out.println("Plane-" + planeNumber + ": Taking off.");
+        try {
+            runway.land(); //wait for runway 
+            System.out.println("Plane-" + planeNumber + ": Undocking.");
+            System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
+            Thread.sleep(1000);
+            System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
+            atc.requestTakeoff(planeNumber);
+            runway.takeoff();
+            System.out.println("Plane-" + planeNumber + ": Taking off.");
+        } catch(InterruptedException ex) {}
     }
 }

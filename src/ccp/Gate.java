@@ -11,9 +11,11 @@ package ccp;
 public class Gate {
     private boolean isOccupied = false;
     private int gateNumber;
+    private Airport airport;
     
-    public Gate(int gateNumber){
+    public Gate(int gateNumber, Airport airport){
         this.gateNumber = gateNumber;
+        this.airport = airport;
     }
     
     public int getGateNumber(){
@@ -29,7 +31,10 @@ public class Gate {
     
     public synchronized void undock(){
         isOccupied = false;
-        notify();
+        notifyAll();
+        synchronized(airport){
+            airport.notifyAll();
+        }
     }
     
     public synchronized boolean isOccupied() {
