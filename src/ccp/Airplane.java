@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 public class Airplane implements Runnable {
     private int planeNumber;
     private int passengerOnBoard;
+    private int newPassengers;
     private boolean isEmergency;
     private ATC atc;
     private Airport airport;
@@ -23,6 +24,7 @@ public class Airplane implements Runnable {
         this.planeNumber = planeNumber;
         this.isEmergency = isEmergency;
         this.passengerOnBoard = (int)(Math.random() * 50) + 1;
+        this.newPassengers = (int)(Math.random() * 50) + 1;
         this.atc = atc;
         this.airport = airport;
     }
@@ -66,7 +68,7 @@ public class Airplane implements Runnable {
        
         System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
         airport.notifyDocked();//notify atc plane has docked
-        Thread disembark = new Thread(new Passenger(planeNumber, passengerOnBoard, false));
+        Thread disembark = new Thread(new DisembarkingPassenger(planeNumber, passengerOnBoard));
         
         Thread refuel = new Thread(() -> {
            try {
@@ -79,7 +81,7 @@ public class Airplane implements Runnable {
         Thread supplies = new Thread(() -> {
             try {
                 System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning.");
-                Thread.sleep(2000); // cleaning
+                Thread.sleep(2000); //cleaning
                 System.out.println("Plane-" + planeNumber + ": Cleaning complete.");
                 airport.getKitchen().requestFood(planeNumber);
             } catch(InterruptedException ex) {}
@@ -87,7 +89,7 @@ public class Airplane implements Runnable {
         
         
         
-        Thread embarking = new Thread(new Passenger(planeNumber, passengerOnBoard, true));
+        Thread embarking = new Thread(new EmbarkingPassenger(planeNumber, newPassengers));
         
         disembark.start();
         refuel.start();
