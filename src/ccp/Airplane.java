@@ -95,7 +95,6 @@ public class Airplane implements Runnable {
         refuel.start();
         supplies.start();
         
-        
         try { disembark.join(); } catch (InterruptedException ex) {
         
         }
@@ -106,16 +105,17 @@ public class Airplane implements Runnable {
         
         }
         
-        try {
-            airport.waitForEmbarkTurn(planeNumber);
-        } catch (InterruptedException ex) {
-        
-        }
         embarking.start();
         try { embarking.join(); } catch (InterruptedException ex) {
         
         }
-        airport.embarkComplete();
+        
+//        try {
+//            airport.waitForEmbarkTurn(planeNumber);
+//        } catch (InterruptedException ex) {
+//        
+//        }
+//        airport.embarkComplete();
         
         gate.undock();
 
@@ -128,6 +128,7 @@ public class Airplane implements Runnable {
             atc.requestTakeoff(planeNumber);
             System.out.println("Plane-" + planeNumber + ": Taking off.");
             runway.takeoff();
+            airport.exitAirport();
         } catch(InterruptedException ex) {}
     }
 }

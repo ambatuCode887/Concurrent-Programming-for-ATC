@@ -9,8 +9,6 @@ package ccp;
  * @author User
  */
 import java.util.Random;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class ATC implements Runnable {
     private final Airport airport;
@@ -80,7 +78,6 @@ public class ATC implements Runnable {
     
     public void requestTakeoff(int planeNumber) {
         System.out.println("ATC: Taking-off is granted for Plane-" + planeNumber + ". Runway is free.");
-        airport.exitAirport();
     }   
 }
 

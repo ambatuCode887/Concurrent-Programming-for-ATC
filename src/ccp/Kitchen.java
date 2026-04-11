@@ -13,6 +13,7 @@ import java.util.Queue;
 
 public class Kitchen implements Runnable {
     private boolean isPreparing = false;
+    private int lastServed = -1;
     private Queue<Integer> waitingPlanes = new LinkedList<>();
 
     @Override
@@ -37,18 +38,20 @@ public class Kitchen implements Runnable {
 
             synchronized(this) {
                 isPreparing = false;
+                lastServed = planeNumber;
                 System.out.println("Kitchen: Food loaded onto Plane-" + planeNumber + ".");
                 notifyAll();
             }
         }
     }
 
-    public synchronized void requestFood(int planeNumber) throws InterruptedException {
-        waitingPlanes.add(planeNumber);
-        System.out.println("Kitchen: Plane-" + planeNumber + " added to food queue.");
-        notifyAll(); // wake up kitchen
-        while(isPreparing || waitingPlanes.contains(planeNumber)) {
-            wait(); // wait until food is ready
+        public synchronized void requestFood(int planeNumber) throws InterruptedException {
+            waitingPlanes.add(planeNumber);
+            System.out.println("Kitchen: Plane-" + planeNumber + " added to food queue.");
+            notifyAll();
+
+            while(lastServed != planeNumber) {
+                wait();
+            }
         }
-    }
 }

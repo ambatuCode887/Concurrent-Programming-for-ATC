@@ -47,19 +47,18 @@ public class Airport {
     }
     
     public synchronized Gate enterAirport() throws InterruptedException {
-        while(planesOnGround >= 3 || emergencyWaiting) {
-            waitingQueue.add(Thread.currentThread());
-            while(planesOnGround >= 3 || emergencyWaiting || 
-                  waitingQueue.peek() != Thread.currentThread()) {
-                wait();
-            }
-            waitingQueue.poll();
+        waitingQueue.add(Thread.currentThread());
+        while(planesOnGround >= 3 || emergencyWaiting || 
+              waitingQueue.peek() != Thread.currentThread()) {
+            wait();
         }
+        waitingQueue.poll();
         planesOnGround++;
         Gate gate = getAvailableGate();
-        gate.reserve(); // ← reserve immediately!
+        gate.reserve();
         return gate;
     }
+
     
     public synchronized void exitAirport(){
          planesOnGround--;
@@ -119,16 +118,16 @@ public class Airport {
         notifyAll();
     }
      
-     public synchronized void waitForEmbarkTurn(int planeNumber) throws InterruptedException {
-        while(nextToEmbark != planeNumber) {
-            wait();
-        }
-    }
-
-    public synchronized void embarkComplete() {
-        nextToEmbark++;
-        notifyAll();
-    }
+//     public synchronized void waitForEmbarkTurn(int planeNumber) throws InterruptedException {
+//        while(nextToEmbark != planeNumber) {
+//            wait();
+//        }
+//    }
+//
+//    public synchronized void embarkComplete() {
+//        nextToEmbark++;
+//        notifyAll();
+//    }
 
     public synchronized void printStatistics() {
         if(waitingTimes.isEmpty()) {
