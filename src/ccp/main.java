@@ -7,16 +7,35 @@ package ccp;
  *
  * @author User
  */
+
+import java.util.Random;
 public class main {
-    public static void main(String[] args) {
-        Runway runway = new Runway();
-        RefuelTruck rTruck = new RefuelTruck();
-        Kitchen kitchen = new Kitchen();
-        Airport airport = new Airport(runway, rTruck, kitchen);
-        
-        ATC atc = new ATC(airport);
+    public static void main(String[] args) throws InterruptedException {
+        ATC atc = new ATC();
         Thread atcThread = new Thread(atc);
+        atcThread.setName("ATC-Thread");
         atcThread.start();
+       
+        Random rand = new Random();
+        Thread[] planes = new Thread[6];
+        
+        for(int i = 0; i < 6; i++) {
+            boolean isEmergency = (i == 4);
+            planes[i] = new Thread(new Airplane(i + 1, isEmergency, atc, atc.getAirport()));
+            planes[i].setName("Plane-" + (i + 1) + "-Thread");
+            planes[i].start();
+            
+            Thread.sleep(rand.nextInt(2000));
+        }
+        
+        // Wait for all planes
+        for(Thread plane : planes) {
+            try {
+                plane.join();
+            } catch(InterruptedException ex) {}
+        }
+        
+        atc.allPlanesDone();
     }
 }
 

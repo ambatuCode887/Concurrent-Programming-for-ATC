@@ -8,49 +8,87 @@ package ccp;
  *
  * @author User
  */
-import java.util.Random;
 
 public class ATC implements Runnable {
-    private final Airport airport;
-    
-    public ATC(Airport airport) {
-        this.airport = airport;
+    private Airport airport;
+    private boolean done = false;
+
+    public ATC() {
+        Runway runway = new Runway();
+        RefuelTruck refuelTruck = new RefuelTruck();
+        Kitchen kitchen = new Kitchen();
+        this.airport = new Airport(runway, refuelTruck, kitchen);
     }
-    
+
+    public Airport getAirport() {
+        return airport;
+    }
+
     @Override
     public void run() {
         System.out.println("ATC: Airport is now open!");
-        
-        Random rand = new Random();
-        Thread[] planes = new Thread[6];
-        
+
+        // Start refuel truck and kitchen
         Thread truckThread = new Thread(airport.getRefuelTruck());
         Thread kitchenThread = new Thread(airport.getKitchen());
+        truckThread.setName("RefuelTruck-Thread");
+        kitchenThread.setName("Kitchen-Thread");
         truckThread.start();
         kitchenThread.start();
-        
-        for(int i = 0; i < 6; i++) {
-            boolean isEmergency = (i == 4); 
-            planes[i] = new Thread(new Airplane(i + 1, isEmergency, this, airport));
-            planes[i].start();
-            
-            try {
-                Thread.sleep(rand.nextInt(2000));
-            } catch(InterruptedException ex) {}
+
+        // Wait until all planes are done
+        synchronized(this) {
+            while(!done) {
+                try {
+                    wait();
+                } catch(InterruptedException ex) {}
+            }
         }
-        
-        for(Thread plane : planes) {
-            try {
-                plane.join();
-            } catch(InterruptedException ex) {}
-        }
-        
+
+        // Shut down
         truckThread.interrupt();
         kitchenThread.interrupt();
-        
+
+        // Print statistics
+        printFinalStatistics();
+    }
+
+    /**
+     * Called by Main when all planes finished
+     */
+    public synchronized void allPlanesDone() {
+        done = true;
+        notifyAll();
+    }
+
+    public Gate requestLanding(int planeNumber, boolean isEmergency) throws InterruptedException {
+        Gate gate;
+        if(isEmergency) {
+            System.out.println("ATC: EMERGENCY landing granted for Plane-" + 
+                planeNumber + "! Fuel shortage!");
+            gate = airport.enterAirportEmergency();
+        } else {
+            if(airport.isFull()) {
+                System.out.println("ATC: Landing Permission Denied for Plane-" + 
+                    planeNumber + ", Airport Full.");
+            }
+            gate = airport.enterAirport();
+        }
+        airport.requestRunwayLand();
+        airport.waitForDock();
+        System.out.println("ATC: Landing permission granted for Plane-" + planeNumber + ".");
+        return gate;
+    }
+
+    public void requestTakeoff(int planeNumber) {
+        System.out.println("ATC: Taking-off is granted for Plane-" + 
+            planeNumber + ". Runway is free.");
+    }
+
+    private void printFinalStatistics() {
         System.out.println("\n========== STATISTICS ==========");
         System.out.println("ATC: All planes have left the airport.");
-        System.out.println("ATC: Sanity check - ");
+        System.out.println("ATC: Sanity check -");
         System.out.println("Gate-1 empty: " + !airport.getGates()[0].isOccupied());
         System.out.println("Gate-2 empty: " + !airport.getGates()[1].isOccupied());
         System.out.println("Gate-3 empty: " + !airport.getGates()[2].isOccupied());
@@ -58,26 +96,5 @@ public class ATC implements Runnable {
         airport.printStatistics();
         System.out.println("================================");
     }
-    
-    public Gate requestLanding(int planeNumber, boolean isEmergency) throws InterruptedException {
-        Gate gate;
-        if(isEmergency) {
-            System.out.println("ATC: EMERGENCY landing granted for Plane-" + planeNumber + "! Fuel shortage!");
-            gate = airport.enterAirportEmergency();
-        } else {
-            if(airport.isFull()) {
-                System.out.println("ATC: Landing Permission Denied for Plane-" + planeNumber + ", Airport Full.");
-            }
-            gate = airport.enterAirport();
-        }
-        airport.getRunway().land();
-        airport.waitForDock();
-        System.out.println("ATC: Landing permission granted for Plane-" + planeNumber + ".");
-        return gate;
-    }
-    
-    public void requestTakeoff(int planeNumber) {
-        System.out.println("ATC: Taking-off is granted for Plane-" + planeNumber + ". Runway is free.");
-    }   
 }
 
