@@ -18,8 +18,7 @@ public class Airplane implements Runnable {
     private boolean isEmergency;
     private ATC atc;
     private Airport airport;
-    
-    
+
     public Airplane(int planeNumber, boolean isEmergency, ATC atc, Airport airport) {
         this.planeNumber = planeNumber;
         this.isEmergency = isEmergency;
@@ -28,106 +27,91 @@ public class Airplane implements Runnable {
         this.atc = atc;
         this.airport = airport;
     }
-    
+
     @Override
-    public void run(){
+    public void run() {
         long arrivalTime = System.currentTimeMillis();
-        
+
         if(isEmergency) {
-            System.out.println("Plane-" + planeNumber + ": EMERGENCY! Fuel shortage, requesting emergency landing!");
+            System.out.println("Plane-" + planeNumber + 
+                ": EMERGENCY! Fuel shortage, requesting emergency landing!");
         }
-        
+
         System.out.println("Plane-" + planeNumber + ": Requesting Landing.");
         Gate gate;
         try {
             gate = atc.requestLanding(planeNumber, isEmergency);
-        } catch (InterruptedException ex) {
+        } catch(InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
             return;
         }
-        
+
         long waitingTime = System.currentTimeMillis() - arrivalTime;
         airport.addWaitingTime(waitingTime);
-        
-        Runway runway = airport.getRunway();
+
         System.out.println("Plane-" + planeNumber + ": Landing.");
         try {
             Thread.sleep(1000);
             System.out.println("Plane-" + planeNumber + ": Landed.");
-        } catch (InterruptedException ex) {
+        } catch(InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
 
-        System.out.println("Plane-" + planeNumber + ": Coasting to Gate-" + gate.getGateNumber() + ".");
+        System.out.println("Plane-" + planeNumber + 
+            ": Coasting to Gate-" + gate.getGateNumber() + ".");
         try {
             Thread.sleep(1000);
-            runway.takeoff();
-        } catch (InterruptedException ex) {
+            airport.releaseRunway();
+        } catch(InterruptedException ex) {
             Logger.getLogger(Airplane.class.getName()).log(Level.SEVERE, null, ex);
         }
-       
-        System.out.println("Plane-" + planeNumber + ": DockedatGate-" + gate.getGateNumber());
-        airport.notifyDocked();//notify atc plane has docked
+
+        System.out.println("Plane-" + planeNumber + 
+            ": Docked at Gate-" + gate.getGateNumber() + ".");
+        airport.notifyDocked(); // notify ATC via airport
+
         Thread disembark = new Thread(new DisembarkingPassenger(planeNumber, passengerOnBoard));
-        
+
         Thread refuel = new Thread(() -> {
-           try {
-               airport.getRefuelTruck().requestFuel(planeNumber);
-           } catch(InterruptedException ex) {
-               
-           }
-        });
-        
-        Thread supplies = new Thread(() -> {
             try {
-                System.out.println("Plane-" + planeNumber + ": Restocking supplies and cleaning.");
-                Thread.sleep(2000);
-                System.out.println("Plane-" + planeNumber + ": Cleaning complete.");
-                airport.getKitchen().requestFood(planeNumber);
+                airport.requestRefuel(planeNumber);
             } catch(InterruptedException ex) {}
         });
-        
-        
-        
+
+        Thread supplies = new Thread(() -> {
+            try {
+                System.out.println("Plane-" + planeNumber + 
+                    ": Restocking supplies and cleaning.");
+                Thread.sleep(2000);
+                System.out.println("Plane-" + planeNumber + ": Cleaning complete.");
+                airport.requestFood(planeNumber);
+            } catch(InterruptedException ex) {}
+        });
+
         Thread embarking = new Thread(new EmbarkingPassenger(planeNumber, newPassengers));
-        
+
         disembark.start();
         refuel.start();
         supplies.start();
-        
-        try { disembark.join(); } catch (InterruptedException ex) {
-        
-        }
-        try { refuel.join(); } catch (InterruptedException ex) {
-        
-        }
-        try { supplies.join(); } catch (InterruptedException ex) {
-        
-        }
-        
-        embarking.start();
-        try { embarking.join(); } catch (InterruptedException ex) {
-        
-        }
-        
-//        try {
-//            airport.waitForEmbarkTurn(planeNumber);
-//        } catch (InterruptedException ex) {
-//        
-//        }
-//        airport.embarkComplete();
-        
-        gate.undock();
 
+        try { disembark.join(); } catch(InterruptedException ex) {}
+        try { refuel.join(); } catch(InterruptedException ex) {}
+        try { supplies.join(); } catch(InterruptedException ex) {}
+
+        embarking.start();
+        try { embarking.join(); } catch(InterruptedException ex) {}
+
+        System.out.println("Plane-" + planeNumber + ": Undocking.");
+        airport.requestUndock(gate, planeNumber);
+
+        System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
         try {
-            runway.land();
-            System.out.println("Plane-" + planeNumber + ": Undocking.");
-            System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
             Thread.sleep(1000);
+            airport.requestRunwayTakeoff();
             System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
             atc.requestTakeoff(planeNumber);
             System.out.println("Plane-" + planeNumber + ": Taking off.");
-            runway.takeoff();
+            airport.releaseRunwayAfterTakeoff();
             airport.exitAirport();
         } catch(InterruptedException ex) {}
     }
