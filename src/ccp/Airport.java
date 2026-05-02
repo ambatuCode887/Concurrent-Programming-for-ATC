@@ -14,11 +14,12 @@ import java.util.Queue;
  * @author User
  */
 public class Airport {
-    // Shared resources
+    //shared resources
     private Gate[] gates = new Gate[3];
     private Runway runway;
     private RefuelTruck refuelTruck;
     private Kitchen kitchen;
+    private boolean takeoffWaiting = false;
     
     //semaphores for resource control
     private Semaphore runwaySemaphore = new Semaphore(1, "Runway");
@@ -90,7 +91,7 @@ public class Airport {
     
     public synchronized Gate enterAirport() throws InterruptedException {
         waitingQueue.add(Thread.currentThread());
-        while(planesOnGround >= 3 || emergencyWaiting ||
+        while(planesOnGround >= 3 || emergencyWaiting || takeoffWaiting ||
               waitingQueue.peek() != Thread.currentThread()) {
             wait();
         }
@@ -105,9 +106,9 @@ public class Airport {
         emergencyWaiting = true;
         notifyAll();
         Gate gate = null;
-        while(gate == null) {
+        while(gate == null || takeoffWaiting) {
             gate = getAvailableGate();
-            if(gate == null) {
+            if(gate == null || takeoffWaiting) {
                 wait();
             }
         }
@@ -142,6 +143,16 @@ public class Airport {
             }
         }
         return null;
+    }
+    
+    public synchronized void signalTakeoff() {
+        takeoffWaiting = true;
+        notifyAll();
+    }
+
+    public synchronized void takeoffComplete() {
+        takeoffWaiting = false;
+        notifyAll();
     }
 
     public Gate[] getGates() {

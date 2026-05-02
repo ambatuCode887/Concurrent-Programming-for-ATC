@@ -102,6 +102,7 @@ public class Airplane implements Runnable {
         try { embarking.join(); } catch(InterruptedException ex) {}
 
         System.out.println("Plane-" + planeNumber + ": Undocking.");
+        airport.signalTakeoff();
         airport.requestUndock(gate, planeNumber);
 
         System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
@@ -113,6 +114,7 @@ public class Airplane implements Runnable {
             System.out.println("Plane-" + planeNumber + ": Taking off.");
             airport.releaseRunwayAfterTakeoff();
             airport.exitAirport();
+            airport.takeoffComplete();
         } catch(InterruptedException ex) {}
     }
 }
