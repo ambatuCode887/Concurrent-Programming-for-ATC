@@ -45,11 +45,11 @@ public class ATC implements Runnable {
             }
         }
 
-        // Shut down
+        //shut down
         truckThread.interrupt();
         kitchenThread.interrupt();
 
-        // Print statistics
+        //print statistics
         printFinalStatistics();
     }
 
