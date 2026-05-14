@@ -28,7 +28,7 @@ public class ATC implements Runnable {
     public void run() {
         System.out.println("ATC: Airport is now open!");
 
-        // Start refuel truck and kitchen
+        //start refuel truck and kitchen
         Thread truckThread = new Thread(airport.getRefuelTruck());
         Thread kitchenThread = new Thread(airport.getKitchen());
         truckThread.setName("RefuelTruck-Thread");
@@ -36,7 +36,7 @@ public class ATC implements Runnable {
         truckThread.start();
         kitchenThread.start();
 
-        // Wait until all planes are done
+        //wait until all planes are done
         synchronized(this) {
             while(!done) {
                 try {
