@@ -68,7 +68,7 @@ public class Airplane implements Runnable {
 
         System.out.println("Plane-" + planeNumber + 
             ": Docked at Gate-" + gate.getGateNumber() + ".");
-        airport.notifyDocked(); // notify ATC via airport
+        airport.notifyDocked(); //notify ATC via airport
 
         Thread disembark = new Thread(new DisembarkingPassenger(planeNumber, passengerOnBoard));
 

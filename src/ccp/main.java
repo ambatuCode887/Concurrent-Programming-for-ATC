@@ -19,11 +19,9 @@ public class main {
 
         Random rand = new Random();
         Thread[] planes = new Thread[6];
-        
-        int emergencyPlane = rand.nextInt(6);
 
         for(int i = 0; i < 6; i++) {
-            boolean isEmergency = (i == emergencyPlane);
+            boolean isEmergency = (i == 4);
             planes[i] = new Thread(new Airplane(i + 1, isEmergency, atc, atc.getAirport()));
             planes[i].setName("Plane-" + (i + 1) + "-Thread");
             planes[i].start();
