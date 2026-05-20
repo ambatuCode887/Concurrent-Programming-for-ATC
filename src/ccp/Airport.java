@@ -147,7 +147,7 @@ public class Airport {
     
     public synchronized void signalTakeoff() {
         takeoffWaiting = true;
-        notifyAll();
+        notifyAll();//waking up the sleeping threads
     }
 
     public synchronized void takeoffComplete() {
