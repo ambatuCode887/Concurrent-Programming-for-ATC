@@ -16,8 +16,8 @@ public class Airplane implements Runnable {
     private int passengerOnBoard;
     private int newPassengers;
     private boolean isEmergency;
-    private ATC atc;
-    private Airport airport;
+    private ATC atc; //share resource
+    private Airport airport; //share resource
 
     public Airplane(int planeNumber, boolean isEmergency, ATC atc, Airport airport) {
         this.planeNumber = planeNumber;
@@ -69,15 +69,15 @@ public class Airplane implements Runnable {
         System.out.println("Plane-" + planeNumber + 
             ": Docked at Gate-" + gate.getGateNumber() + ".");
         airport.notifyDocked(); //notify ATC via airport
-
+        //the thread for disembarking
         Thread disembark = new Thread(new DisembarkingPassenger(planeNumber, passengerOnBoard));
-
+        //then call for the refuelTruck
         Thread refuel = new Thread(() -> {
             try {
                 airport.requestRefuel(planeNumber);
             } catch(InterruptedException ex) {}
         });
-
+        //afterward call the supplies
         Thread supplies = new Thread(() -> {
             try {
                 System.out.println("Plane-" + planeNumber + 
@@ -87,28 +87,28 @@ public class Airplane implements Runnable {
                 airport.requestFood(planeNumber);
             } catch(InterruptedException ex) {}
         });
-
+        //then after all those are done then its embarking
         Thread embarking = new Thread(new EmbarkingPassenger(planeNumber, newPassengers));
-
+        //start the thread disembark-->refuel-->supplies
         disembark.start();
         refuel.start();
         supplies.start();
-
+        //these start first 
         try { disembark.join(); } catch(InterruptedException ex) {}
         try { refuel.join(); } catch(InterruptedException ex) {}
         try { supplies.join(); } catch(InterruptedException ex) {}
-
+        //once those done then its embarking
         embarking.start();
         try { embarking.join(); } catch(InterruptedException ex) {}
-
+        //then lastly undocking
         System.out.println("Plane-" + planeNumber + ": Undocking.");
         airport.signalTakeoff();
         airport.requestUndock(gate, planeNumber);
-
+        //undock
         System.out.println("Plane-" + planeNumber + ": Coasting to Runway.");
         try {
             Thread.sleep(1000);
-            airport.requestRunwayTakeoff();
+            airport.requestRunwayTakeoff(); //requesting for taking off, then it will hold the runway to only allow taking off so there's no plane landing
             System.out.println("Plane-" + planeNumber + ": Requesting Taking off.");
             atc.requestTakeoff(planeNumber);
             System.out.println("Plane-" + planeNumber + ": Taking off.");
