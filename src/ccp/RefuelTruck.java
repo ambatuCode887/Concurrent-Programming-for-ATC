@@ -15,7 +15,7 @@ public class RefuelTruck implements Runnable {
     private Queue<Integer> waitingPlanes = new LinkedList<>();
     
     public synchronized void requestFuel(int planeNumber) throws InterruptedException {
-        waitingPlanes.add(planeNumber);
+        waitingPlanes.add(planeNumber);//this is when the plane are request for refuel but are occupied
         System.out.println("Refuel Truck: Plane-" + planeNumber + " added to queue.");
         
         notifyAll(); //tell the truck a plane is waiting
@@ -26,7 +26,7 @@ public class RefuelTruck implements Runnable {
     }
     
         @Override
-        public void run() {
+    public void run() {
         while(true) {
             int planeNumber = -1;
             synchronized(this) {

@@ -17,18 +17,27 @@ public class Semaphore {
         this.name = name;
     }
 
+    /**
+     * Acquires a permit - blocks if no permits available
+     * Uses while loop instead of if to guard against spurious wakeups
+     * while loop re-checks condition every time thread is woken
+     */
     public synchronized void acquire() throws InterruptedException {
-        while(permits <= 0) {
+        while(permits <= 0) { //release lock and sleep until notified
             wait();
         }
-        permits--;
+        permits--; //consume one permit
     }
 
     public synchronized void release() {
-        permits++;
+        permits++; //release a permit then wakes up all waiting threads using notifyAll(), if use notify() it will causes thread starvation
         notifyAll();
     }
 
+     /**
+     * Non-blocking attempt to acquire a permit
+     * Returns true if successful, false if no permits available
+     */
     public synchronized boolean tryAcquire() {
         if(permits > 0) {
             permits--;
@@ -38,6 +47,6 @@ public class Semaphore {
     }
 
     public synchronized int getPermits() {
-        return permits;
+        return permits; //return current number of available permit
     }
 }

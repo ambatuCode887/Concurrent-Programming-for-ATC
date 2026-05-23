@@ -35,20 +35,18 @@ public class Airport {
     private List<Long> waitingTimes = new ArrayList<>();
 
     public Airport(Runway runway, RefuelTruck refuelTruck, Kitchen kitchen) {
-        gates[0] = new Gate(1, this);
+        gates[0] = new Gate(1, this); //create 3 gates
         gates[1] = new Gate(2, this);
         gates[2] = new Gate(3, this);
         this.refuelTruck = refuelTruck;
         this.runway = runway;
         this.kitchen = kitchen;
     }
-
-    //implementing POV 
     
     public synchronized Gate requestDock(int planeNumber) throws InterruptedException {
         Gate gate = getAvailableGate();
         if(gate != null) {
-            gate.reserve();
+            gate.reserve(); //set it as isOccupied = true meaning a thread is occupying it
             System.out.println("Airport: Gate-" + gate.getGateNumber() + 
                 " assigned to Plane-" + planeNumber + ".");
         }
@@ -56,7 +54,7 @@ public class Airport {
     }
     
     public synchronized void requestUndock(Gate gate, int planeNumber) {
-        gate.undock();
+        gate.undock(); //meaning it's no longer occupied and it will wake up all the thread wanted to dock
         System.out.println("Airport: Plane-" + planeNumber + 
             " undocked from Gate-" + gate.getGateNumber() + ".");
     }
