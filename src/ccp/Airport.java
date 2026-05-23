@@ -68,79 +68,80 @@ public class Airport {
     }
     
     public void requestRunwayLand() throws InterruptedException {
-        runwaySemaphore.acquire();
-        runway.land();
+        runwaySemaphore.acquire(); //when a plane is occupying the runway
+        runway.land(); //then told other thread to wait
     }
     
     public void releaseRunway() {
-        runway.takeoff();
-        runwaySemaphore.release();
+        runway.takeoff(); //when the runway is free and notify other plane that are waiting to land
+        runwaySemaphore.release(); //then release the permit and wake the other plane
     }
     
     public void requestRunwayTakeoff() throws InterruptedException {
-        runwaySemaphore.acquire();
-        runway.land();
+        runwaySemaphore.acquire(); //acquiring permit, however it will block if runway busy
+        runway.land(); //reuse land() to mark runway is occupied
     }
     
     public void releaseRunwayAfterTakeoff() {
-        runway.takeoff();
-        runwaySemaphore.release();
+        runway.takeoff(); //mark runway is free
+        runwaySemaphore.release(); //release permit, wakes waiting plane
     }
     
     public synchronized Gate enterAirport() throws InterruptedException {
-        waitingQueue.add(Thread.currentThread());
-        while(planesOnGround >= 3 || emergencyWaiting || takeoffWaiting ||
-              waitingQueue.peek() != Thread.currentThread()) {
-            wait();
+        waitingQueue.add(Thread.currentThread()); //join the landing queue
+        while(planesOnGround >= 3 || emergencyWaiting || takeoffWaiting || 
+              waitingQueue.peek() != Thread.currentThread()) { //all these condition wait if airport are full, if there are emergency
+            // if there are taking off planes, wait if not at the front of queue
+            wait(); //release lock and sleep
         }
-        waitingQueue.poll();
-        planesOnGround++;
-        Gate gate = getAvailableGate();
-        gate.reserve();
-        return gate;
+        waitingQueue.poll(); //remove self from queue  
+        planesOnGround++; //increment planes on ground
+        Gate gate = getAvailableGate(); //get first available gate
+        gate.reserve(); //mark gate as occupied
+        return gate; //return assigned gate to ATC
     }
 
     public synchronized Gate enterAirportEmergency() throws InterruptedException {
-        emergencyWaiting = true;
-        notifyAll();
+        emergencyWaiting = true; //if emergency are true
+        notifyAll(); //then wake normal planes to re-check condition
         Gate gate = null;
         while(gate == null || takeoffWaiting) {
-            gate = getAvailableGate();
+            gate = getAvailableGate(); //get the first free gate
             if(gate == null || takeoffWaiting) {
-                wait();
+                wait(); //if gate is occupied then wait
             }
         }
-        gate.reserve();
-        emergencyWaiting = false;
-        planesOnGround++;
-        notifyAll();
-        return gate;
+        gate.reserve(); //reserve the gate immediately to prevent race condition
+        emergencyWaiting = false; //if the emergency were false then go back to normal
+        planesOnGround++; //increment plane on ground
+        notifyAll(); //wake up the thread
+        return gate; //return assigned gate to ATC
     }
 
     public synchronized void exitAirport() {
-        planesOnGround--;
-        notifyAll();
+        planesOnGround--; //decrement plane on ground
+        notifyAll(); //wake up the thread
     }
 
     public synchronized void waitForDock() throws InterruptedException {
         while(!planeDocked) {
-            wait();
+            wait(); //if the plane is not docked then wait
         }
         planeDocked = false;
     }
 
     public synchronized void notifyDocked() {
-        planeDocked = true;
+        planeDocked = true; // if the plane is docked then wake the entire thread
         notifyAll();
     }
 
     public synchronized Gate getAvailableGate() {
-        for(Gate gate : gates) {
+        for(Gate gate : gates) { // reserve gate immediately while it still lock
             if(!gate.isOccupied()) {
                 return gate;
             }
         }
-        return null;
+        return null; //all gate is full
     }
     
     public synchronized void signalTakeoff() {
