@@ -23,17 +23,17 @@ public class Gate {
     }
     
     public synchronized void dock() throws InterruptedException{
-        while(isOccupied){
+        while(isOccupied){ //if the dock was occupied then throw wait() function to suspend current thread and releases the object locks
             wait();
         }
-        isOccupied = true;
+        isOccupied = true; //once the dock is free it sets to true
     }
     
     public synchronized void undock(){
         isOccupied = false;
-        notifyAll();
+        notifyAll(); //using notifyAll() function to wake all thread that are currently waiting on the dock
         synchronized(airport){
-            airport.notifyAll();
+            airport.notifyAll(); //safely acquire the lock on the airport object and wake up any thread that are currently waiting
         }
     }
     
